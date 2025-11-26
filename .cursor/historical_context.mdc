@@ -1,0 +1,36 @@
+## Session notes
+
+- Implemented Better Auth scaffolding (`lib/auth/config.ts`, `lib/auth/server.ts`, `app/api/auth/[...better-auth]/route.ts`) and product-only auth pages (`app/(auth)/sign-in/page.tsx`, `app/(auth)/sign-up/page.tsx`).
+- Added proxy-based protection for the authenticated app surface in `proxy.ts` targeting `/(app)` routes.
+- Created initial service layer under `lib/effect/` (runtime helper plus `youtube.service.ts`, `comment-analysis.service.ts`, `market.service.ts`, `user-data.service.ts`) using pure, typed functions as placeholders for future Effect integration.
+- Built the authenticated app shell and feature pages: `app/(app)/layout.tsx`, `app/(app)/dashboard/page.tsx`, `app/(app)/comments/page.tsx`, `app/(app)/market/page.tsx`, all wired to the service layer with mocked data.
+- Updated `app/page.tsx` to be a minimal product entry that routes users into auth rather than a marketing landing.
+- Updated `package.json` dependencies to include `better-auth` and `effect` (Effect is not yet fully wired into the services).
+
+## File change overview (approximate line ranges)
+
+- `lib/auth/config.ts`: new file, lines 1–48 – Better Auth configuration with Google provider and YouTube-related scopes.
+- `lib/auth/server.ts`: new file, lines 1–32 – Session helper adapting Better Auth session shape for server-side usage.
+- `app/api/auth/[...better-auth]/route.ts`: new file, lines 1–39 – Thin adapter delegating GET/POST to Better Auth.
+- `app/(auth)/sign-in/page.tsx`: new file, lines 1–40 – Simple sign-in screen with Google/YouTube CTA.
+- `app/(auth)/sign-up/page.tsx`: new file, lines 1–32 – Simple sign-up screen mirroring sign-in behavior.
+- `proxy.ts`: new file, lines 1–30 – Guards `/(app)` routes and redirects unauthenticated users to `/(auth)/sign-in`.
+- `lib/effect/runtime.ts`: new file, lines 1–7 – Utility `runEffect` wrapper around synchronous/async functions (placeholder for future Effect usage).
+- `lib/effect/youtube.service.ts`: new file, lines 1–94 – Types and mocked implementations for dashboard snapshot and video comments.
+- `lib/effect/comment-analysis.service.ts`: new file, lines 1–48 – Comment clustering types and a basic mock `getCommentInsights`.
+- `lib/effect/market.service.ts`: new file, lines 1–63 – Market overview types and a mock `getMarketOverview`.
+- `lib/effect/user-data.service.ts`: new file, lines 1–35 – User profile and connected channel types with a mock `getUserProfile`.
+- `app/(app)/layout.tsx`: new file, lines 1–35 – Creator workspace shell with sidebar navigation.
+- `app/(app)/dashboard/page.tsx`: new file, lines 1–79 – Dashboard UI consuming `getDashboardSnapshot`.
+- `app/(app)/comments/page.tsx`: new file, lines 1–67 – Comment intelligence UI consuming `getVideoComments` and `getCommentInsights`.
+- `app/(app)/market/page.tsx`: new file, lines 1–67 – Market radar UI consuming `getMarketOverview`.
+- `app/page.tsx`: updated file, lines 1–33 – Replaced starter content with minimal sign-in/sign-up entry.
+- `package.json`: updated dependencies section to add `better-auth` and `effect`.
+ - `env.ts`: new file, lines 1–22 – Central `@t3-oss/env-core` schema for server env vars (Better Auth Google credentials and `NODE_ENV`).
+ - `lib/auth/config.ts`: updated to read Google OAuth client id/secret from the typed `env` object instead of `process.env`.
+
+## History
+
+- 2025-11-26: Initial integration of Better Auth scaffolding, proxy-based route protection, mocked Effect service layer, and first-pass dashboard/comments/market product surfaces as per `y.plan.md`.
+ - 2025-11-26: Added `@t3-oss/env-core` + `zod` and moved Better Auth Google OAuth configuration to use a central, validated `env` schema.
+
