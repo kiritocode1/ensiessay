@@ -18,10 +18,10 @@ EnsiEssay is an authenticated workspace for YouTube creators that turns channel 
 
 ```mermaid
 flowchart LR
-    U[Visitor] --> A[(app/(auth))]
+    U[Visitor] --> A[auth app]
     A -->|Google OAuth via Better Auth| B[Session in lib/auth/server]
     B --> P[proxy.ts guard]
-    P -->|authenticated| W[(app/(app))]
+    P -->|authenticated| W[workspace app]
     P -->|unauthenticated| A
     W --> D[Dashboard page]
     W --> C[Comments page]
@@ -60,8 +60,8 @@ flowchart LR
 
 3. **Run the dev server**
 
-    ```bash
-    pnpm dev
+````bash
+pnpm dev
     ```
 
     Then open `http://localhost:3000`.
@@ -75,3 +75,4 @@ flowchart LR
 ## Further reading
 
 -   `packages-and-setup.md`: short reference for core dependencies and pnpm commands.
+````
