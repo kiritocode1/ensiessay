@@ -28,9 +28,17 @@
 - `package.json`: updated dependencies section to add `better-auth` and `effect`.
  - `env.ts`: new file, lines 1–22 – Central `@t3-oss/env-core` schema for server env vars (Better Auth Google credentials and `NODE_ENV`).
  - `lib/auth/config.ts`: updated to read Google OAuth client id/secret from the typed `env` object instead of `process.env`.
+ - `app/api/auth/[...better-auth]/route.ts`: later updated to use `toNextJsHandler(auth)` from `better-auth/next-js` instead of a manual adapter.
+ - `lib/auth/client.ts`: new file, lines 1–3 – Better Auth React client via `createAuthClient` for use in client components.
+ - `app/(auth)/sign-in/page.tsx`: later updated to call `authClient.signIn.social({ provider: "google" })` on button click instead of linking to `/api/auth/google`.
+ - `app/(auth)/sign-up/page.tsx`: later updated to use the same Better Auth client-based Google flow as sign-in.
 
 ## History
 
 - 2025-11-26: Initial integration of Better Auth scaffolding, proxy-based route protection, mocked Effect service layer, and first-pass dashboard/comments/market product surfaces as per `y.plan.md`.
  - 2025-11-26: Added `@t3-oss/env-core` + `zod` and moved Better Auth Google OAuth configuration to use a central, validated `env` schema.
+ - 2025-11-26: Swapped the auth API route to `toNextJsHandler(auth)` and wired sign-in/sign-up to use the Better Auth React client for a real Google OAuth flow.
+- 2025-11-27: Replaced the default Next.js boilerplate in `README.md` (approx. lines 1–80) with project-specific documentation covering motive, architecture, key packages, and pnpm-based setup instructions.
+- 2025-11-27: Added a Mermaid architecture diagram to `README.md` under the Architecture section to visualize auth → proxy → workspace pages → `lib/effect` services.
+- 2025-11-27: Created `packages-and-setup.md` as a lightweight reference for core dependencies and pnpm commands, and linked it from the &quot;Further reading&quot; section in `README.md`. Also expanded the Mermaid node listing to name the specific `lib/effect` service files.
 

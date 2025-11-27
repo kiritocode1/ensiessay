@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## EnsiEssay – Creator Intelligence Workspace
 
-## Getting Started
+EnsiEssay is an authenticated workspace for YouTube creators that turns channel data, comments, and market signals into an actionable &quot;essay&quot; on what to publish next. The motive is to move beyond dashboards and give a fast read on audience sentiment, content performance, and market direction in one place.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+-   **App router layout**
+    -   `app/(auth)`: sign-in / sign-up surfaces using Better Auth.
+    -   `app/(app)`: authenticated workspace (`dashboard`, `comments`, `market`) behind a proxy guard.
+-   **Auth**
+    -   [`better-auth`](https://www.better-auth.com/) with a Google OAuth provider and YouTube scopes.
+    -   Server config + session helpers in `lib/auth/` and API route in `app/api/auth/[...better-auth]/route.ts`.
+-   **Effect-style service layer**
+    -   Pure, typed service modules in `lib/effect/` (`youtube.service.ts`, `comment-analysis.service.ts`, `market.service.ts`, `user-data.service.ts`) with mocked implementations.
+    -   A small `runtime` helper that is ready to be swapped to real [`effect`](https://effect.website) usage later.
+-   **Routing protection**
+    -   `proxy.ts` enforces that all `/(app)` routes require an authenticated session and redirects to `/(auth)/sign-in` otherwise.
+
+```mermaid
+flowchart LR
+    U[Visitor] --> A[(app/(auth))]
+    A -->|Google OAuth via Better Auth| B[Session in lib/auth/server]
+    B --> P[proxy.ts guard]
+    P -->|authenticated| W[(app/(app))]
+    P -->|unauthenticated| A
+    W --> D[Dashboard page]
+    W --> C[Comments page]
+    W --> M[Market page]
+    D & C & M --> S[(lib/effect services)]
+    S -->|mocked / future Effect| Y[youtube.service.ts, comment-analysis.service.ts, market.service.ts, user-data.service.ts]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Packages
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-   **Runtime / framework**
+    -   `next` (App Router), `react`, `react-dom`.
+-   **Auth**
+    -   `better-auth` and `better-auth/next-js` for server + client adapters.
+-   **Environment**
+    -   `@t3-oss/env-core` and `zod` for a typed `env.ts` schema (Google OAuth keys, `NODE_ENV`, etc.).
+-   **Experiments / services**
+    -   `effect` (planned) for future effectful service implementations behind the existing typed interfaces in `lib/effect/`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. **Install dependencies**
 
-To learn more about Next.js, take a look at the following resources:
+    ```bash
+    pnpm install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Environment variables**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    Configure a `.env.local` compatible with `env.ts`:
 
-## Deploy on Vercel
+    - `NODE_ENV`
+    - `GOOGLE_CLIENT_ID`
+    - `GOOGLE_CLIENT_SECRET`
+    - Any additional Better Auth or YouTube-related secrets you introduce later.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Run the dev server**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    ```bash
+    pnpm dev
+    ```
+
+    Then open `http://localhost:3000`.
+
+## Development notes
+
+-   Client-side auth flows use the Better Auth React client in `lib/auth/client.ts` from the `app/(auth)` pages.
+-   The `lib/effect/*` modules currently return mocked data; you can replace their internals with real Effect programs without changing the UI layer.
+-   Keep new modules typed and avoid `any` / `undefined` in TypeScript; extend the existing domain types instead.
+
+## Further reading
+
+-   `packages-and-setup.md`: short reference for core dependencies and pnpm commands.
